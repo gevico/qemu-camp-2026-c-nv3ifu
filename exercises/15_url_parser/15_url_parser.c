@@ -10,13 +10,19 @@
  */
 
 int parse_url(const char* url) {
-    int err = 0;
-
-    // TODO: 在这里添加你的代码
-    // I AM NOT DONE
-
-exit:
-    return err;
+    const char *query = strchr(url, '?');
+    if (!query || !query[1]) return EINVAL;
+    char *copy = malloc(strlen(query + 1) + 1);
+    if (!copy) return ENOMEM;
+    strcpy(copy, query + 1);
+    for (char *pair = strtok(copy, "&"); pair; pair = strtok(NULL, "&")) {
+        char *equal = strchr(pair, '=');
+        if (!equal) continue;
+        *equal = '\0';
+        printf("key = %s, value = %s\n", pair, equal + 1);
+    }
+    free(copy);
+    return 0;
 }
 
 int main() {

@@ -32,54 +32,51 @@ typedef struct {
 } LRUCache;
 
 static unsigned hash_int(int key) {
-    // TODO: 在这里添加你的代码
-    // I AM NOT DONE
+    unsigned x = (unsigned)key; x ^= x >> 16; x *= 0x7feb352du; x ^= x >> 15; x *= 0x846ca68bu; return x ^ (x >> 16);
 }
 
 static HashEntry* hash_find(LRUCache* c, int key, HashEntry*** pprev_next) {
-    // TODO: 在这里添加你的代码
-    // I AM NOT DONE
+    size_t idx = hash_int(key) % c->bucket_count; HashEntry **slot = &c->buckets[idx];
+    while (*slot && (*slot)->key != key) slot = &(*slot)->next; if (pprev_next) *pprev_next = slot; return *slot;
 }
 
 static void list_add_to_head(LRUCache* c, LRUNode* node) {
-    // TODO: 在这里添加你的代码
-    // I AM NOT DONE
+    node->prev = NULL; node->next = c->head; if (c->head) c->head->prev = node; else c->tail = node; c->head = node;
 }
 
 static void list_remove(LRUCache* c, LRUNode* node) {
-    // TODO: 在这里添加你的代码
-    // I AM NOT DONE
+    if (node->prev) node->prev->next = node->next; else c->head = node->next;
+    if (node->next) node->next->prev = node->prev; else c->tail = node->prev; node->prev = node->next = NULL;
 }
 
 static void list_move_to_head(LRUCache* c, LRUNode* node) {
-    // TODO: 在这里添加你的代码
-    // I AM NOT DONE
+    if (node == c->head) return; list_remove(c, node); list_add_to_head(c, node);
 }
 
 static LRUNode* list_pop_tail(LRUCache* c) {
-    // TODO: 在这里添加你的代码
-    // I AM NOT DONE
+    LRUNode *node = c->tail; if (node) list_remove(c, node); return node;
 }
 
 /* LRU 接口实现 */
 static LRUCache* lru_create(int capacity) {
-    // TODO: 在这里添加你的代码
-    // I AM NOT DONE
+    if (capacity <= 0) return NULL; LRUCache *c = calloc(1, sizeof(*c)); if (!c) return NULL; c->capacity = capacity; c->bucket_count = (size_t)capacity * 2 + 1; c->buckets = calloc(c->bucket_count, sizeof(*c->buckets)); if (!c->buckets) { free(c); return NULL; } return c;
 }
 
 static void lru_free(LRUCache* c) {
-    // TODO: 在这里添加你的代码
-    // I AM NOT DONE
+    if (!c) return; LRUNode *p = c->head; while (p) { LRUNode *next = p->next; free(p); p = next; }
+    for (size_t i = 0; i < c->bucket_count; i++) { HashEntry *e = c->buckets[i]; while (e) { HashEntry *next = e->next; free(e); e = next; } } free(c->buckets); free(c);
 }
 
 static int lru_get(LRUCache* c, int key, int* out_value) {
-    // TODO: 在这里添加你的代码
-    // I AM NOT DONE
+    HashEntry *e = hash_find(c, key, NULL); if (!e) return 0; list_move_to_head(c, e->node); if (out_value) *out_value = e->node->value; return 1;
 }
 
 static void lru_put(LRUCache* c, int key, int value) {
-    // TODO: 在这里添加你的代码
-    // I AM NOT DONE
+    HashEntry *e = hash_find(c, key, NULL); if (e) { e->node->value = value; list_move_to_head(c, e->node); return; }
+    LRUNode *node = malloc(sizeof(*node)); HashEntry *entry = malloc(sizeof(*entry)); if (!node || !entry) { free(node); free(entry); return; }
+    node->key = key; node->value = value; node->prev = node->next = NULL; list_add_to_head(c, node);
+    entry->key = key; entry->node = node; size_t idx = hash_int(key) % c->bucket_count; entry->next = c->buckets[idx]; c->buckets[idx] = entry; c->size++;
+    if (c->size > c->capacity) { LRUNode *old = list_pop_tail(c); HashEntry **slot; HashEntry *old_entry = hash_find(c, old->key, &slot); *slot = old_entry->next; free(old_entry); free(old); c->size--; }
 }
 
 /* 打印当前缓存内容（从头到尾） */

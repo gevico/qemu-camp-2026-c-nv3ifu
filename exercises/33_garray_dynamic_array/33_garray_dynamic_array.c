@@ -1,4 +1,5 @@
 #include <stddef.h>
+#include <stdint.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -28,20 +29,17 @@ typedef struct {
 
 /* 接口：初始化动态数组 */
 GArray* garray_init(size_t elem_size) {
-    // TODO: 在这里添加你的代码
-    // I AM NOT DONE
+    if (!elem_size || elem_size > SIZE_MAX / GARRAY_INIT_CAP) return NULL; GArray *arr = calloc(1, sizeof(*arr)); if (!arr) return NULL; arr->data = malloc(elem_size * GARRAY_INIT_CAP); if (!arr->data) { free(arr); return NULL; } arr->capacity = GARRAY_INIT_CAP; arr->elem_size = elem_size; return arr;
 }
 
 /* 接口：追加单个元素，必要时扩容为原来的 2 倍 */
 void garray_append(GArray* arr, void* elem) {
-    // TODO: 在这里添加你的代码
-    // I AM NOT DONE
+    if (!arr || !elem) return; if (arr->len == arr->capacity) { if (arr->capacity > SIZE_MAX / 2 || arr->capacity * 2 > SIZE_MAX / arr->elem_size) return; size_t capacity = arr->capacity * 2; void *data = realloc(arr->data, capacity * arr->elem_size); if (!data) return; arr->data = data; arr->capacity = capacity; } memcpy((char *)arr->data + arr->len * arr->elem_size, elem, arr->elem_size); arr->len++;
 }
 
 /* 接口：释放动态数组 */
 void garray_free(GArray* arr) {
-    // TODO: 在这里添加你的代码
-    // I AM NOT DONE
+    if (!arr) return; free(arr->data); free(arr);
 }
 
 int main(void) {

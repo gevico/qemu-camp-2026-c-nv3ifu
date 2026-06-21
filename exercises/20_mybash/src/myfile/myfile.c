@@ -34,12 +34,17 @@ int __cmd_myfile(const char* filename) {
     int fd;
     Elf64_Ehdr ehdr;
 
+    if (!filename || strlen(filename) >= sizeof(filepath)) return 1;
     strcpy(filepath, filename);
     fflush(stdout);
     printf("filepath: %s\n", filepath);
 
-    // TODO: 在这里添加你的代码
-    // I AM NOT DONE
+    fd = open(filepath, O_RDONLY);
+    if (fd < 0) { perror(filepath); return 1; }
+    ssize_t bytes = read(fd, &ehdr, sizeof(ehdr));
+    if (bytes != sizeof(ehdr) || memcmp(ehdr.e_ident, ELFMAG, SELFMAG) != 0) {
+      fprintf(stderr, "%s is not a valid ELF file\n", filepath); close(fd); return 1;
+    }
 
     print_elf_type(ehdr.e_type);
     close(fd);

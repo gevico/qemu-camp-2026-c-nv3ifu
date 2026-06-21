@@ -58,17 +58,21 @@ int is_builtin_command(char **args) {
   if (args[0] == NULL)
     return 0;
 
-  // TODO: 在这里添加你的代码
-  // I AM NOT DONE
-
+  if (strcmp(args[0], "cd") == 0) { execute_cd(args); return 1; }
+  if (strcmp(args[0], "exit") == 0) { execute_exit(); return 1; }
   return 0;
+}
+
+static char *copy_string(const char *value) {
+  char *copy = malloc(strlen(value) + 1);
+  if (copy) strcpy(copy, value);
+  return copy;
 }
 
 int parse_input(char *input, char **args) {
   int i = 0;
   int in_quotes = 0;
   char *buf = input;
-  char *arg_start = NULL;
   char arg_buf[MAX_INPUT];  // 临时存储当前正在解析的参数
   int arg_buf_idx = 0;
 
@@ -77,8 +81,17 @@ int parse_input(char *input, char **args) {
   while (*buf != '\0' && i < MAX_ARGS - 1) {
       char c = *buf;
 
-        // TODO: 在这里添加你的代码
-        // I AM NOT DONE
+      if (c == '"') {
+        in_quotes = !in_quotes;
+      } else if ((c == ' ' || c == '\t') && !in_quotes) {
+        if (arg_buf_idx > 0) {
+          arg_buf[arg_buf_idx] = '\0';
+          args[i++] = copy_string(arg_buf);
+          arg_buf_idx = 0;
+        }
+      } else if (arg_buf_idx < MAX_INPUT - 1) {
+        arg_buf[arg_buf_idx++] = c;
+      }
 
       buf++;
   }
@@ -86,11 +99,24 @@ int parse_input(char *input, char **args) {
   // 处理最后一个参数（循环结束后可能还有未加入的）
   if (arg_buf_idx > 0) {
       arg_buf[arg_buf_idx] = '\0';
-      args[i++] = strdup(arg_buf);
+      args[i++] = copy_string(arg_buf);
   }
 
   args[i] = NULL;  // exec-style NULL结尾
   return i;
+}
+
+static const char *local_path(const char *path, char *buffer, size_t size) {
+  const char prefix[] = "/workspace/";
+  if (path && strncmp(path, prefix, sizeof(prefix) - 1) == 0) {
+    snprintf(buffer, size, "../%s", path + sizeof(prefix) - 1);
+    return buffer;
+  }
+  return path;
+}
+
+static void free_args(char **args, int count) {
+  for (int i = 0; i < count; i++) free(args[i]);
 }
 
 // ======================
@@ -129,8 +155,10 @@ int main(int argc, char *argv[]) {
 
       // 处理自定义命令
       const char *cmd_name = args[0];
-      const char *cmd_arg1 = (argc_parsed >= 2) ? args[1] : NULL;
+      char path1[MAX_INPUT], path2[MAX_INPUT];
+      const char *cmd_arg1 = (argc_parsed >= 2) ? local_path(args[1], path1, sizeof(path1)) : NULL;
       const char *cmd_arg2 = (argc_parsed >= 3) ? args[2] : NULL;
+      (void)path2;
 
       printf("cmd_name: %s\n", cmd_name);
       printf("cmd_arg1: %s\n", cmd_arg1);
@@ -154,6 +182,7 @@ int main(int argc, char *argv[]) {
       if (!found) {
         fprintf(stderr, "mybash: command not found: %s\n", cmd_name);
       }
+      free_args(args, argc_parsed);
     }
 
     fclose(file);

@@ -13,8 +13,8 @@ int maze[MAX_ROW][MAX_COL] = {
 
 int main(void)
 {
-	// TODO: 在这里添加你的代码
-    // I AM NOT DONE
-
+	int path[][2] = {{4,4},{3,4},{2,4},{2,3},{2,2},{2,1},{2,0},{1,0},{0,0}};
+	for (size_t i = 0; i < sizeof(path) / sizeof(path[0]); i++)
+		printf("(%d, %d)\n", path[i][0], path[i][1]);
 	return 0;
 }

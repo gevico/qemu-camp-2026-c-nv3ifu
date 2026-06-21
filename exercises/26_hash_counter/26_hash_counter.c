@@ -20,8 +20,7 @@ typedef struct {
 
 // djb2哈希函数
 unsigned long djb2_hash(const char *str) {
-    // TODO: 在这里添加你的代码
-    // I AM NOT DONE
+    unsigned long hash = 5381; for (unsigned char c; (c = (unsigned char)*str++);) hash = hash * 33 + c; return hash;
 }
 
 // 创建哈希表
@@ -36,14 +35,13 @@ HashTable *create_hash_table(int size) {
 void hash_table_insert(HashTable *ht, const char *word) {
     unsigned long hash = djb2_hash(word) % ht->size;
 
-    // TODO: 在这里添加你的代码
-    // I AM NOT DONE
+    for (HashNode *p = ht->table[hash]; p; p = p->next) if (strcmp(p->word, word) == 0) { p->count++; return; }
+    HashNode *p = malloc(sizeof(*p)); p->word = malloc(strlen(word) + 1); strcpy(p->word, word); p->count = 1; p->next = ht->table[hash]; ht->table[hash] = p;
 }
 
 // 从哈希表中获取所有单词及其计数
 void get_all_words(HashTable *ht, HashNode **nodes, int *count) {
-    // TODO: 在这里添加你的代码
-    // I AM NOT DONE
+    for (int i = 0; i < ht->size; i++) for (HashNode *p = ht->table[i]; p; p = p->next) nodes[(*count)++] = p;
 }
 
 // 比较函数用于排序
@@ -52,8 +50,7 @@ int compare_nodes(const void *a, const void *b) {
     HashNode *node_b = *(HashNode **)b;
     
     // 先按计数降序，再按字母升序
-    // TODO: 在这里添加你的代码
-    // I AM NOT DONE
+    if (node_a->count != node_b->count) return node_b->count - node_a->count; return strcmp(node_a->word, node_b->word);
 }
 
 // 释放哈希表内存
@@ -73,8 +70,9 @@ void free_hash_table(HashTable *ht) {
 
 // 从字符串中获取下一个单词
 char *get_next_word(const char **text) {
-    // TODO: 在这里添加你的代码
-    // I AM NOT DONE
+    while (**text && !isalpha((unsigned char)**text)) (*text)++; if (!**text) return NULL;
+    const char *start = *text; while (isalpha((unsigned char)**text)) (*text)++; size_t len = (size_t)(*text - start); char *word = malloc(len + 1); if (!word) return NULL;
+    for (size_t i = 0; i < len; i++) word[i] = (char)tolower((unsigned char)start[i]); word[len] = '\0'; return word;
 }
 
 int main(int argc, char *argv[]) {

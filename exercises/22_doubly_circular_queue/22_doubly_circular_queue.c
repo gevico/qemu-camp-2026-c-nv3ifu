@@ -17,18 +17,15 @@ static link get_last(void) {
 }
 
 static void enqueue_int(int v) {
-    // TODO: 在这里添加你的代码
-    // I AM NOT DONE
+    link p = make_node(v); if (p) insert(p);
 }
 
 static int dequeue_int(int *out) {
-    // TODO: 在这里添加你的代码
-    // I AM NOT DONE
+    link p = get_last(); if (!p) return 0; if (out) *out = p->data; delete(p); free_node(p); return 1;
 }
 
 static void print_dequeue_n(int n) {
-    // TODO: 在这里添加你的代码
-    // I AM NOT DONE
+    for (int i = 0; i < n; i++) { int value; if (!dequeue_int(&value)) break; printf("%d%s", value, i + 1 == n ? "" : " "); }
 }
 
 int main(void) {
